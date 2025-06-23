@@ -6,7 +6,7 @@ int StringLength(const char* str);
 char* ToUpper(char* str);
 char* ToLower(char* str);
 char* Shrink(char* str);
-char* DeleteSpaces(char* str);
+char* RemoveSymbol(char* str, const char symbol);
 bool IsPalindrome(const char* str);
 bool IsIntNumber(const char* str);
 int ToIntNumber(const char* str);
@@ -14,6 +14,8 @@ bool IsBinNumber(const char* str);
 int BinToDec(const char* str);
 bool IsHexNumber(const char* str);
 int HexToDec(const char* str);
+bool IsIPaddress(const char* str);
+bool IsMACaddress(const char* str);
 
 
 int main()
@@ -55,6 +57,14 @@ int main()
 	cout << (IsHexNumber(str) ? "Строка - шестнадцатеричное число" : "Строка - не шестнадцатеричное число") << endl;
 
 	cout << "Десятичное значение строки: " << HexToDec(str) << endl;
+
+	cout << "Введите строку (IP-адрес): "; cin.getline(str, SIZE);
+
+	cout << (IsIPaddress(str) ? "Строка - IP-адрес" : "Строка - не IP-адрес") << endl;
+
+	cout << "Введите строку (MAC-адрес): "; cin.getline(str, SIZE);
+
+	cout << (IsMACaddress(str) ? "Строка - MAC-адрес" : "Строка - не MAC-адрес") << endl;
 
 	delete[] str;
 
@@ -107,17 +117,15 @@ char* Shrink(char* str)
 	return str;
 }
 
-char* DeleteSpaces(char* str)
+char* RemoveSymbol(char* str, const char symbol)
 {
 	char* temp = str;
 
 	for (int i = 0; str[i]; ++i)
 	{
-		if (str[i] != ' ')
+		while (str[i] == symbol)
 		{
-			*temp = str[i];
-
-			++temp;
+			for (int j = i; str[j]; ++j) str[j] = str[j + 1];
 		}
 	}
 
@@ -134,7 +142,7 @@ bool IsPalindrome(const char* str)
 	for (int i = 0; str[i]; ++i) temp[i] = str[i];
 	temp[len] = '\0';
 
-	DeleteSpaces(temp);
+	RemoveSymbol(temp, ' ');
 	ToLower(temp);
 
 	len = StringLength(temp);
@@ -271,4 +279,75 @@ int HexToDec(const char* str)
 	}
 
 	return number * sign;
+}
+
+bool IsIPaddress(const char* str)
+{
+	int len = StringLength(str);
+
+	if (len < 7 || len > 15) return false;
+
+	int segments{ 0 };
+	int digits{ 0 };
+	int number{ 0 };
+
+	while (*str != '\0')
+	{
+		if (isdigit(*str))
+		{
+			number = number * 10 + (*str - '0');
+			++digits;
+
+			if (number > 255 || digits > 3) return false;
+		}
+		else if (*str == '.')
+		{
+			if (digits == 0) return false;
+
+			number = 0;
+			digits = 0;
+			++segments;
+
+			if (segments > 3) return false;
+		}
+		else return false;
+
+		++str;
+	}
+
+	if (segments != 3 || digits == 0) return false;
+
+	return true;
+}
+bool IsMACaddress(const char* str)
+{
+	if (StringLength(str) != 17) return false;
+
+	int number{ 0 };
+
+	for (int i = 0; i < 17; ++i)
+	{
+		if (i % 3 == 2)
+		{
+			if (str[i] != ':' && str[i] != '-') return false;
+
+			number = 0;
+		}
+		else
+		{
+			char symbol = str[i];
+			int digit;
+
+			if (symbol >= '0' && symbol <= '9') digit = symbol - '0';
+			else if (symbol >= 'a' && symbol <= 'f') digit = 10 + (symbol - 'a');
+			else if (symbol >= 'A' && symbol <= 'F') digit = 10 + (symbol - 'A');
+			else return false;
+
+			number = number * 16 + digit;
+
+			if (number > 255) return false;
+		}
+	}
+
+	return true;
 }
