@@ -5,15 +5,15 @@ using namespace std;
 int StringLength(const char* str);
 char* ToUpper(char* str);
 char* ToLower(char* str);
-char* Shrink(char* str); // ???
+char* Shrink(char* str);
 char* DeleteSpaces(char* str);
-bool IsPalindrome(char* str);
-bool IsIntNumber(char* str);
-int ToIntNumber(char* str);
-bool IsBinNumber(char* str);
-int BinToDec(char* str);
-bool IsHexNumber(char* str);
-int HexToDec(char* str);
+bool IsPalindrome(const char* str);
+bool IsIntNumber(const char* str);
+int ToIntNumber(const char* str);
+bool IsBinNumber(const char* str);
+int BinToDec(const char* str);
+bool IsHexNumber(const char* str);
+int HexToDec(const char* str);
 
 
 int main()
@@ -65,23 +65,19 @@ int main()
 
 int StringLength(const char* str)
 {
-	int count{ 0 };
+	int i = 0;
 
-	while (*str != '\0')
-	{
-		++count;
-		++str;
-	}
+	for (; str[i]; ++i);
 
-	return count;
+	return i;
 }
 
 char* ToUpper(char* str)
 {
-	for (char* ptrStr = str; *ptrStr != '\0'; ++ptrStr)
+	for (int i = 0; str[i]; ++i)
 	{
-		if ((*ptrStr >= 'a' && *ptrStr <= 'z') || (*ptrStr >= 'а' && *ptrStr <= 'я')) *ptrStr -= 32;
-		else if (*ptrStr == 'ё') *ptrStr -= 16;
+		if ((str[i] >= 'a' && str[i] <= 'z') || (str[i] >= 'а' && str[i] <= 'я')) str[i] -= 32;
+		else if (str[i] == 'ё') str[i] -= 16;
 	}
 
 	return str;
@@ -89,30 +85,24 @@ char* ToUpper(char* str)
 
 char* ToLower(char* str)
 {
-	for (char* ptrStr = str; *ptrStr != '\0'; ++ptrStr)
+	for (int i = 0; str[i]; ++i)
 	{
-		if ((*ptrStr >= 'A' && *ptrStr <= 'Z') || (*ptrStr >= 'А' && *ptrStr <= 'Я')) *ptrStr += 32;
-		else if (*ptrStr == 'Ё') *ptrStr += 16;
+		if ((str[i] >= 'A' && str[i] <= 'Z') || (str[i] >= 'А' && str[i] <= 'Я')) str[i] += 32;
+		else if (str[i] == 'Ё') str[i] += 16;
 	}
 
 	return str;
 }
 
-char* Shrink(char* str) // ???
+char* Shrink(char* str)
 {
-	char* temp = str;
-
-	for (char* ptrStr = str; *ptrStr != '\0'; ++ptrStr)
+	for (int i = 0; str[i]; ++i)
 	{
-		if (*ptrStr != ' ')
+		while (str[i] == ' ' && (str[i + 1] == ' '))
 		{
-			*temp = *ptrStr;
-
-			++temp;
+			for (int j = i + 1; str[j]; ++j) str[j] = str[j + 1];
 		}
 	}
-
-	*temp = '\0';
 
 	return str;
 }
@@ -121,11 +111,11 @@ char* DeleteSpaces(char* str)
 {
 	char* temp = str;
 
-	for (char* ptrStr = str; *ptrStr != '\0'; ++ptrStr)
+	for (int i = 0; str[i]; ++i)
 	{
-		if (*ptrStr != ' ')
+		if (str[i] != ' ')
 		{
-			*temp = *ptrStr;
+			*temp = str[i];
 
 			++temp;
 		}
@@ -136,44 +126,47 @@ char* DeleteSpaces(char* str)
 	return str;
 }
 
-bool IsPalindrome(char* str)
+bool IsPalindrome(const char* str)
 {
-	char* temp = ToLower(DeleteSpaces(str));
-	int len = StringLength(temp);
-	bool IsPal{ true };
+	int len = StringLength(str);
+
+	char* temp = new char[len + 1];
+	for (int i = 0; str[i]; ++i) temp[i] = str[i];
+	temp[len] = '\0';
+
+	DeleteSpaces(temp);
+	ToLower(temp);
+
+	len = StringLength(temp);
 
 	for (int i = 0, j = len - 1; i < len / 2; ++i, --j)
 	{
 		if (temp[i] != temp[j])
 		{
-			IsPal = false;
-			break;
+			delete[] temp;
+
+			return false;
 		}
 	}
 
-	return IsPal;
+	delete[] temp;
+
+	return true;
 }
 
-bool IsIntNumber(char* str)
+bool IsIntNumber(const char* str)
 {
-	bool IsInt{ true };
-
 	if (*str == '+' || *str == '-') ++str;
 
-	for (char* ptrStr = str; *ptrStr != '\0'; ++ptrStr)
+	for (int i = 0; str[i]; ++i)
 	{
-		if (*ptrStr < '0' || *ptrStr > '9')
-		{
-			IsInt = false;
-
-			break;
-		}
+		if (str[i] < '0' || str[i] > '9') return false;
 	}
 
-	return IsInt;
+	return true;
 }
 
-int ToIntNumber(char* str)
+int ToIntNumber(const char* str)
 {
 	if (!IsIntNumber(str)) return 0;
 
@@ -198,26 +191,19 @@ int ToIntNumber(char* str)
 	return number * sign;
 }
 
-bool IsBinNumber(char* str)
+bool IsBinNumber(const char* str)
 {
-	bool IsBin{ true };
-
 	if (*str == '+' || *str == '-') ++str;
 
-	for (char* ptrStr = str; *ptrStr != '\0'; ++ptrStr)
+	for (int i = 0; str[i]; ++i)
 	{
-		if (*ptrStr < '0' || *ptrStr > '1')
-		{
-			IsBin = false;
-
-			break;
-		}
+		if (str[i] < '0' || str[i] > '1') return false;
 	}
 
-	return IsBin;
+	return true;
 }
 
-int BinToDec(char* str)
+int BinToDec(const char* str)
 {
 	if (!IsBinNumber(str)) return 0;
 
@@ -242,26 +228,20 @@ int BinToDec(char* str)
 	return number * sign;
 }
 
-bool IsHexNumber(char* str)
+bool IsHexNumber(const char* str)
 {
-	bool IsHex{ true };
-
 	if (*str == '+' || *str == '-') ++str;
 
-	for (char* ptrStr = str; *ptrStr != '\0'; ++ptrStr)
+	for (int i = 0; str[i]; ++i)
 	{
-		if ((*ptrStr < '0' || *ptrStr > '9') && (*ptrStr < 'a' || *ptrStr > 'f') && (*ptrStr < 'A' || *ptrStr > 'F'))
-		{
-			IsHex = false;
-
-			break;
-		}
+		if ((str[i] < '0' || str[i] > '9') && (str[i] < 'a' || str[i] > 'f') && (str[i] < 'A' || str[i] > 'F'))
+			return false;
 	}
 
-	return IsHex;
+	return true;
 }
 
-int HexToDec(char* str)
+int HexToDec(const char* str)
 {
 	if (!IsHexNumber(str)) return 0;
 
