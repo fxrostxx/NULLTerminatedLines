@@ -15,7 +15,9 @@ int BinToDec(const char* str);
 bool IsHexNumber(const char* str);
 int HexToDec(const char* str);
 bool IsIPaddress(const char* str);
+bool IsIPaddressV2(const char* str);
 bool IsMACaddress(const char* str);
+bool IsMACaddressV2(const char* str);
 
 
 int main()
@@ -61,10 +63,12 @@ int main()
 	cout << "Введите строку (IP-адрес): "; cin.getline(str, SIZE);
 
 	cout << (IsIPaddress(str) ? "Строка - IP-адрес" : "Строка - не IP-адрес") << endl;
+	cout << (IsIPaddressV2(str) ? "Строка - IP-адрес (IsIPaddressV2)" : "Строка - не IP-адрес (IsIPaddressV2)") << endl;
 
 	cout << "Введите строку (MAC-адрес): "; cin.getline(str, SIZE);
 
 	cout << (IsMACaddress(str) ? "Строка - MAC-адрес" : "Строка - не MAC-адрес") << endl;
+	cout << (IsMACaddressV2(str) ? "Строка - MAC-адрес (IsMACaddressV2)" : "Строка - не MAC-адрес (IsMACaddressV2)") << endl;
 
 	delete[] str;
 
@@ -319,6 +323,35 @@ bool IsIPaddress(const char* str)
 
 	return true;
 }
+
+bool IsIPaddressV2(const char* str)
+{
+	int len = StringLength(str);
+
+	if (len < 7 || len > 15) return false;
+
+	char byte[4]{};
+
+	for (int i = 0, j = 0, dots = 0; str[i]; ++i)
+	{
+		if (str[i] == '.')
+		{
+			j = 0;
+			dots++;
+
+			if (dots > 3 || ToIntNumber(byte) > 255) return false;
+
+			continue;
+		}
+
+		byte[j++] = str[i];
+
+		if (j > 3) return false;
+	}
+
+	return true;
+}
+
 bool IsMACaddress(const char* str)
 {
 	if (StringLength(str) != 17) return false;
@@ -347,6 +380,34 @@ bool IsMACaddress(const char* str)
 
 			if (number > 255) return false;
 		}
+	}
+
+	return true;
+}
+
+bool IsMACaddressV2(const char* str)
+{
+	if (StringLength(str) != 17) return false;
+
+	char byte[4]{};
+
+	for (int i = 0, j = 0, separators = 0; str[i]; ++i)
+	{
+		if (str[i] == ':' || str[i] == '-')
+		{
+			j = 0;
+			separators++;
+
+			if (separators > 5 || HexToDec(byte) > 255) return false;
+
+			continue;
+		}
+
+		if (!isxdigit(str[i])) return false;
+
+		byte[j++] = str[i];
+
+		if (j > 2) return false;
 	}
 
 	return true;
